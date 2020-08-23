@@ -1,0 +1,147 @@
+// @ts-check
+const puppeteer = require('puppeteer');
+
+// (async () => {
+//     const browser = await puppeteer.launch({ headless: false, slowMo: 250 });
+//     const page = await browser.newPage();
+//     await page.goto('https://cottonon.com/ZA/sale/sale-mens/');
+
+//     let items = [];
+//     await browser.waitForTarget(() => false)
+//     // const result = await page.evaluate(() => {
+//     let item = document.querySelector('.search-result-content ul').firstElementChild
+//     let itemName = item.querySelector('.product-name').innerText;
+//     items.push({ name: itemName })
+//     // let headingFromWeb = document.querySelectorAll(".mw-headline");
+//     // const headingList = [...headingFromWeb];
+//     // return headingList.map(heading => heading.innerText);
+//     // return null;
+//     // });
+
+//     console.log(items);
+//     console.log(result);
+//     await browser.close();
+// })();
+
+// document.querySelector('.search-result-content ul.search-result-items').children.length
+(async () => {
+    let items = [];
+
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.goto('https://cottonon.com/ZA/sale/sale-mens/');
+    await page.waitForSelector('.search-result-content');
+
+    const getItemDescription = (page, selector) =>
+        page.evaluate(
+            selector => document.querySelector(selector).innerText,
+            selector
+        );
+
+    const getAttributeLink = (page, selector, att) => {
+        switch (att) {
+
+            case 'src':
+                return page.evaluate(
+                    (selector, att) => document.querySelector(selector).getAttribute('src'),
+                    selector
+                );
+
+            case 'href':
+                return page.evaluate(
+                    (selector) => document.querySelector(selector).getAttribute('href'),
+                    selector
+                );
+
+            case 'data-itemid':
+                return page.evaluate(
+                    (selector) => document.querySelector(selector).getAttribute('data-itemid'),
+                    selector
+                );
+            default:
+                return null
+        }
+    };
+
+    const result = await page.evaluate(async () => {
+        // const items = await document.querySelectorAll(".search-result-content ul .product-name").forEach(item => item.innerText);
+        // const items = document.querySelector('.search-result-content ul > li div.product-name').innerText;
+
+        let items = [];
+        const imageIds = document.querySelectorAll('.search-result-content ul li div.product-tile')
+        const productNames = document.querySelectorAll('.search-result-content ul li div.product-name');
+        const previousPrices = document.querySelectorAll('.search-result-content ul li div.product-pricing .product-standard-price');
+        const currentPrice = document.querySelectorAll('.search-result-content ul li div.product-pricing .product-sales-price');
+        const colors = document.querySelectorAll('.search-result-content ul li div.product-colors');
+        const imageLinks = document.querySelectorAll('.search-result-content ul li div.product-image a img')
+        const itemLinks = document.querySelectorAll('.search-result-content ul li div.product-image a');
+
+        document.querySelectorAll(".search-result-content ul.search-result-items li").forEach((item, i) => {
+            items.push({
+                id: imageIds[i].getAttribute('data-itemid'),
+                name: productNames[i].innerText,
+                prviousPrice: previousPrices[i].innerText,
+                currentPrice: currentPrice[i].innerText,
+                color: colors[i].innerText,
+                image: imageLinks[i].getAttribute('src'),
+                itemLink: itemLinks[i].getAttribute('href'),
+            })
+        });
+
+        // imageIds.forEach(i => items.push(i.getAttribute('data-itemid')));
+        // items.forEach(i => names.push(i.innerText));
+        return items
+    });
+
+    console.log(result)
+
+    // document.querySelector('.search-result-content ul.search-result-items').children.length
+    // document.querySelectorAll(".search-result-content ul.search-result-items li").forEach(item => console.log(item));
+    // const name = await getItemDescription(
+    //     page,
+    //     '.search-result-content ul > li div.product-name'
+    // );
+
+    // const prviousPrice = await getItemDescription(
+    //     page,
+    //     '.search-result-content ul > li div.product-pricing .product-standard-price'
+    // );
+
+    // const currentPrice = await getItemDescription(
+    //     page,
+    //     '.search-result-content ul > li div.product-pricing .product-sales-price'
+    // );
+
+    // const colors = await getItemDescription(
+    //     page,
+    //     '.search-result-content ul > li div.product-colors'
+    // );
+
+    // const image = await getAttributeLink(
+    //     page,
+    //     '.search-result-content ul > li div.product-image a img', 'src'
+    // );
+    // console.log(image);
+
+
+    // const itemLink = await getAttributeLink(
+    //     page,
+    //     '.search-result-content ul > li div.product-image a', 'href'
+    // );
+    // console.log(itemLink);
+
+    // const itemId = await getAttributeLink(
+    //     page,
+    //     '.search-result-content ul > li div.product-tile', 'data-itemid'
+    // );
+    // console.log(itemId);
+
+
+
+
+    // let item = page.querySelector('.search-result-content ul').firstElementChild
+    // let itemName = item.querySelector('.product-name').innerText;
+    // items.push({ name: itemName });
+    // console.log(items);
+    await browser.close();
+})();

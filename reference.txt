@@ -1,0 +1,77 @@
+// @ts-check
+const puppeteer = require('puppeteer');
+
+// (async () => {
+//     const browser = await puppeteer.launch({ headless: false, slowMo: 250 });
+//     const page = await browser.newPage();
+//     await page.goto('https://cottonon.com/ZA/sale/sale-mens/');
+
+//     let items = [];
+//     await browser.waitForTarget(() => false)
+//     // const result = await page.evaluate(() => {
+//     let item = document.querySelector('.search-result-content ul').firstElementChild
+//     let itemName = item.querySelector('.product-name').innerText;
+//     items.push({ name: itemName })
+//     // let headingFromWeb = document.querySelectorAll(".mw-headline");
+//     // const headingList = [...headingFromWeb];
+//     // return headingList.map(heading => heading.innerText);
+//     // return null;
+//     // });
+
+//     console.log(items);
+//     console.log(result);
+//     await browser.close();
+// })();
+
+// document.querySelector('.search-result-content ul.search-result-items').children.length
+(async () => {
+    let items = [];
+
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.goto('https://cottonon.com/ZA/sale/sale-mens/');
+    await page.waitForSelector('.search-result-content');
+
+    const getItemDexription = (page, selector) =>
+        page.evaluate(
+            selector => document.querySelector(selector).innerText,
+            selector
+        );
+
+    const name = await getItemDexription(
+        page,
+        '.search-result-content ul > li div.product-name'
+    );
+
+    const prviousPrice = await getItemDexription(
+        page,
+        '.search-result-content ul > li div.product-pricing .product-standard-price'
+    );
+
+    const currentPrice = await getItemDexription(
+        page,
+        '.search-result-content ul > li div.product-pricing .product-sales-price'
+    );
+
+    const colors = await getItemDexription(
+        page,
+        '.search-result-content ul > li div.product-colors'
+    );
+
+    // const reviews = await getItemDexription(
+    //     page,
+    //     '.search-result-content ul > li div.product-review .bv-off-screen'
+    // );
+
+    console.log(name);
+    console.log(prviousPrice);
+    console.log(currentPrice);
+    console.log(colors);
+    // console.log(reviews);
+
+    // let item = page.querySelector('.search-result-content ul').firstElementChild
+    // let itemName = item.querySelector('.product-name').innerText;
+    // items.push({ name: itemName });
+    // console.log(items);
+    await browser.close();
+})();
